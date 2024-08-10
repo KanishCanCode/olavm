@@ -26,7 +26,7 @@ pub enum PoseidonType {
     Branch,
     Leaf,
 }
-
+// Calculates the Poseidon hash for a fixed-size input.
 pub fn calculate_poseidon(
     full_input: [GoldilocksField; POSEIDON_INPUT_NUM],
 ) -> [GoldilocksField; POSEIDON_OUTPUT_NUM] {
@@ -41,7 +41,7 @@ pub fn calculate_poseidon(
         round_ctr += 1;
     });
 
-    // Partial rounds.
+    // Apply the partial rounds in the Poseidon permutation.
     partial_first_constant_layer(&mut state);
     state = mds_partial_layer_init(&state);
     for r in 0..(poseidon::N_PARTIAL_ROUNDS - 1) {
@@ -66,7 +66,7 @@ pub fn calculate_poseidon(
 
     state
 }
-
+// Calculates Poseidon hash for arbitrary-sized input.
 pub fn calculate_arbitrary_poseidon(inputs: &[GoldilocksField]) -> [GoldilocksField; 4] {
     let mut state: [GoldilocksField; POSEIDON_STATE_WIDTH] =
         [GoldilocksField::ZERO; POSEIDON_STATE_WIDTH];
@@ -78,14 +78,14 @@ pub fn calculate_arbitrary_poseidon(inputs: &[GoldilocksField]) -> [GoldilocksFi
     }
     state[0..4].try_into().expect("slice with incorrect length")
 }
-
+// Calculates Poseidon hash for an array of u64 inputs.
 pub fn calculate_arbitrary_poseidon_u64s(inputs_u64: &[u64]) -> [u64; 4] {
     let inputs = inputs_u64
         .iter()
         .map(|x| GoldilocksField::from_canonical_u64(*x))
         .collect::<Vec<GoldilocksField>>();
     let mut state = [GoldilocksField::ZERO; POSEIDON_STATE_WIDTH];
-
+     // Process the input in chunks of 8 and apply Poseidon hash.
     for input_chunk in inputs.chunks(8) {
         let end = min(input_chunk.len(), 8);
         state[0..end].copy_from_slice(&input_chunk[0..end]);
@@ -98,7 +98,7 @@ pub fn calculate_arbitrary_poseidon_u64s(inputs_u64: &[u64]) -> [u64; 4] {
         .try_into()
         .expect("slice with incorrect length")
 }
-
+// Calculates Poseidon hash and generates an intermediate trace for debugging.
 pub fn calculate_poseidon_and_generate_intermediate_trace(
     full_input: [GoldilocksField; POSEIDON_INPUT_NUM],
 ) -> PoseidonRow {
